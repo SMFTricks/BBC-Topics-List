@@ -1,8 +1,8 @@
 <?php
 
 /**
- * @package BBC Message Boxes
- * @version 3.1
+ * @package BBC Topics List
+ * @version 1.0
  * @author Diego Andrés <diegoandres_cortes@outlook.com>
  * @copyright Copyright (c) 2023, SMF Tricks
  * @license https://www.mozilla.org/en-US/MPL/2.0/
@@ -117,6 +117,7 @@ class BBC_TopicsList
 		$config_vars = [
 			['int', 'TopicsList_topic_limit', 'subtext' => $txt['TopicsList_topic_limit_desc'], 'min' => 0],
 			['check', 'TopicsList_topic_notags', 'subtext' => $txt['TopicsList_topic_notags_desc']],
+			['check', 'TopicsList_topic_only', 'subtext' => $txt['TopicsList_topic_only_desc']],
 			['permissions', 'TopicsList_use', 'subtext' => $txt['permissionhelp_TopicsList_use']]
 		];
 		
@@ -160,14 +161,22 @@ class BBC_TopicsList
 	 */
 	public function bbc_buttons(array &$bbc_tags) : void
 	{
-		global $txt;
+		global $txt, $editortxt;
 
-		// Permission to use these?
+		// Permission to use these?1
 		if (!allowedTo('TopicsList_use'))
 			return;
 
 		$this->language();
+		addJavaScriptVar('bbc_topicslist_title', $txt['TopicsList_insert_title'], true);
 		addJavaScriptVar('bbc_topicslist_default', $txt['TopicsList_default_text'], true);
+		addJavaScriptVar('bbc_topicslist_board', $txt['TopicsList_insert_board'], true);
+		addJavaScriptVar('bbc_topicslist_board_desc', $txt['TopicsList_insert_board_desc'], true);
+		addJavaScriptVar('bbc_topicslist_insert', $editortxt['insert'], true);
+		addJavaScriptVar('bbc_topicslist_alphanumeric', $txt['TopicsList_insert_alphanumeric'], true);
+		addJavaScriptVar('bbc_topicslist_include', $txt['TopicsList_insert_include'], true);
+		addJavaScriptVar('bbc_topicslist_include_desc', $txt['TopicsList_insert_include_desc'], true);
+		addJavaScriptVar('bbc_topicslist_include_placeholder', $txt['TopicsList_insert_include_placeholder'], true);
 
 		// Add the BBCs
 		$bbc_tags[][] = [
@@ -219,11 +228,8 @@ class BBC_TopicsList
 				],
 				'content' => '<div class="roundframe bbc_topicslist">$1</div>',
 				'disabled_content' => '<div class="noticebox">' . $txt['TopcisList_disabled'] . '</div>',
-				'validate' => isset($disabled['code']) ? null : function(&$tag, &$data, $disabled, $params) use ($txt)
+				'validate' => isset($disabled['code']) ? null : function(&$tag, &$data, $disabled, $params)
 				{
-					// Default data
-					$data = $txt['TopicsList_no_data'];
-
 					// Handle the bbc somewhere else.
 					$this->getList($data, $params);
 				},
@@ -241,90 +247,115 @@ class BBC_TopicsList
 	 */
 	private function getList(string &$data, array $params) : void
 	{
-		global $smcFunc, $modSettings, $context;
+		global $smcFunc, $txt, $scripturl, $modSettings, $context, $board, $topic, $user_info;
 
-		$result = $smcFunc['db_query']('', '
-			SELECT
-				t.id_topic, t.id_board, t.approved, t.id_first_msg, TRIM(m.subject) as subject
-			FROM {db_prefix}topics as t
-			JOIN {db_prefix}messages as m ON (m.id_msg = t.id_first_msg)
-			WHERE t.approved = {int:approved}
-				AND {query_see_topic_board}' . (empty($params['{board}']) ? '' : '
-				AND t.id_board = {int:board}') . '
-			ORDER BY subject' . (empty($modSettings['TopicsList_topic_limit']) ? '' : '
-			LIMIT {int:limit}'),
-			[
-				'board' => (int) $params['{board}'],
-				'limit' => (int) $modSettings['TopicsList_topic_limit'],
-				'approved' => 1,
-			]
-		);
+		// List title
+		$context['list_topics_title'] = $data;
 
-		$context['list_topics'] = [
-			'0-9' => [],
-		];
-		$context['list_topics_index'] = ['0-9'];
-		$context['list_included_chars'] = !empty($params['{include}']) ? explode(',', $params['{include}']) : [];
+		// Default data
+		$data = $txt['TopicsList_no_data'];
 
-		// Make the characters uppercase
-		if (!empty($context['list_included_chars']))
-		{
-			foreach ($context['list_included_chars'] as $key => $included_character)
-			{
-				$context['list_included_chars'][$key] = mb_strtoupper($included_character);
-			}
-		}
-
-		while ($row = $smcFunc['db_fetch_assoc']($result))
-		{
-			// Remove initial tags?
-			if (!empty($modSettings['TopicsList_topic_notags']))
-				$row['subject'] = preg_replace('/^\[[^\]]+\]\s*/', '', $row['subject']);
-
-			// Initial letter
-			$initial_character = mb_substr(mb_strtoupper($row['subject']), 0, 1);
-
-			// Included?
-			if (!empty($context['list_included_chars']) && !in_array($initial_character, $context['list_included_chars']))
-				continue;
-
-			// Regex?
-			if (!empty($params['{alphanumeric}']) && $params['{alphanumeric}'] === 'true' && preg_match('/^[^\p{L}\p{N}]/u', $initial_character))
-				continue;
-
-			$context['list_topics_index'][] = $initial_character;
-
-			// Add the topic
-			$context['list_topics'][$initial_character][$row['id_topic']] = $row;
-		}
-		$smcFunc['db_free_result']($result);
-
-		// Topics?
-		if (empty($context['list_topics']))
+		// Only in topics?
+		if (!empty($modSettings['TopicsList_topic_only']) && empty($board) && empty($topic))
 			return;
 
-		// Group the numbers
-		foreach ($context['list_topics'] as $initial_character => $character_data)
+		// Topcis list for the template
+		$context['list_topics'] = [];
+		$context['list_topics_index'] = [];
+	
+		if (($context['list_topics'] = cache_get_data('bbc_topicslist_b' . (int) $params['{board}'] . '_u' . $user_info['id'] . (!empty($params['{alphanumeric}']) && $params['{alphanumeric}'] === 'true' ? '_alphanum' : '') . (!empty($params['{include}']) ? '_inc-' . $params['{include}'] : ''), $context['list_topics'], 3600)) === null || ($context['list_topics_index'] = cache_get_data('bbc_topicslistindex_b' . (int) $params['{board}'] . '_u' . $user_info['id'] . (!empty($params['{alphanumeric}']) && $params['{alphanumeric}'] === 'true' ? '_alphanum' : '') . (!empty($params['{include}']) ? '_inc-' . $params['{include}'] : ''), $context['list_topics_index'], 3600)) === null)
 		{
-			if (!in_array($initial_character, $this->_numeric_chars))
-				continue;
+			$result = $smcFunc['db_query']('', '
+				SELECT
+					t.id_topic, t.id_board, t.approved, t.id_first_msg, TRIM(m.subject) as subject
+				FROM {db_prefix}topics as t
+				JOIN {db_prefix}messages as m ON (m.id_msg = t.id_first_msg)
+				WHERE t.approved = {int:approved}
+					AND {query_see_topic_board}' . (empty($params['{board}']) ? '' : '
+					AND t.id_board = {int:board}') . '
+				ORDER BY subject' . (empty($modSettings['TopicsList_topic_limit']) ? '' : '
+				LIMIT {int:limit}'),
+				[
+					'board' => (int) $params['{board}'],
+					'limit' => (int) $modSettings['TopicsList_topic_limit'],
+					'approved' => 1,
+				]
+			);
 
-			$context['list_topics']['0-9'] += $character_data;
-			unset($context['list_topics'][$initial_character]);
+			$context['list_topics'] = [
+				'0-9' => [],
+			];
+			$context['list_topics_index'] = ['0-9'];
+			$context['list_included_chars'] = !empty($params['{include}']) ? explode(',', $params['{include}']) : [];
+
+			// Make the characters uppercase
+			if (!empty($context['list_included_chars']))
+			{
+				foreach ($context['list_included_chars'] as $key => $included_character)
+				{
+					$context['list_included_chars'][$key] = mb_strtoupper($included_character);
+				}
+			}
+
+			while ($row = $smcFunc['db_fetch_assoc']($result))
+			{
+				// Remove initial tags?
+				if (!empty($modSettings['TopicsList_topic_notags']))
+					$row['subject'] = preg_replace('/^\[[^\]]+\]\s*/', '', $row['subject']);
+
+				// Initial letter
+				$initial_character = mb_substr(mb_strtoupper($row['subject']), 0, 1);
+
+				// Included?
+				if (!empty($context['list_included_chars']) && !in_array($initial_character, $context['list_included_chars']))
+					continue;
+
+				// Regex?
+				if (!empty($params['{alphanumeric}']) && $params['{alphanumeric}'] === 'true' && preg_match('/^[^\p{L}\p{N}]/u', $initial_character))
+					continue;
+
+				$context['list_topics_index'][] = $initial_character;
+
+				// Add the topic
+				$context['list_topics'][$initial_character][$row['id_topic']] = $row;
+			}
+			$smcFunc['db_free_result']($result);
+
+			// Topics?
+			if (empty($context['list_topics']))
+				return;
+
+			// Group the numbers
+			foreach ($context['list_topics'] as $initial_character => $character_data)
+			{
+				if (!in_array($initial_character, $this->_numeric_chars))
+					continue;
+
+				$context['list_topics']['0-9'] += $character_data;
+				unset($context['list_topics'][$initial_character]);
+			}
+
+			// Dump the numeric index
+			if (empty($context['list_topics']['0-9']))
+			{
+				unset($context['list_topics']['0-9']);
+				unset($context['list_topics_index']['0-9']);
+			}
+
+			$context['list_topics_index'] = array_unique($context['list_topics_index']);
+
+			// Cache!
+			cache_put_data('bbc_topicslist_b' . (int) $params['{board}'] . '_u' . $user_info['id'] . (!empty($params['{alphanumeric}']) && $params['{alphanumeric}'] === 'true' ? '_alphanum' : '') . (!empty($params['{include}']) ? '_inc-' . $params['{include}'] : ''), $context['list_topics'], 3600);
+			cache_put_data('bbc_topicslistindex_b' . (int) $params['{board}'] . '_u' . $user_info['id'] . (!empty($params['{alphanumeric}']) && $params['{alphanumeric}'] === 'true' ? '_alphanum' : '') . (!empty($params['{include}']) ? '_inc-' . $params['{include}'] : ''), $context['list_topics_index'], 3600);
 		}
-
-		// Dump the numeric index
-		if (empty($context['list_topics']['0-9']))
-		{
-			unset($context['list_topics']['0-9']);
-			unset($context['list_topics_index']['0-9']);
-		}
-
-		$context['list_topics_index'] = array_unique($context['list_topics_index']);
+		
 		$data = template_topics_list();
 
-		// Return the data
-		$data = $data . '   <br>Board is: ' . $params['{board}'];
+		// There's a board?
+		if (!empty($params['{board}']))
+		{
+			$data .= '<br><a class="button" href="' . $scripturl . '?board=' . $params['{board}'] . '.0">' . $txt['all'] . '</a>';
+		}
 	}
 
 	/**

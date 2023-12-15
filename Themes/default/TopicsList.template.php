@@ -1,25 +1,21 @@
 <?php
+
 /**
- * Simple Machines Forum (SMF)
- *
- * @package SMF
- * @author Simple Machines https://www.simplemachines.org
- * @copyright 2022 Simple Machines and individual contributors
- * @license https://www.simplemachines.org/about/smf/license.php BSD
- *
- * @version 2.1.0
+ * @package BBC Topics List
+ * @version 1.0
+ * @author Diego Andrés <diegoandres_cortes@outlook.com>
+ * @copyright Copyright (c) 2023, SMF Tricks
+ * @license https://www.mozilla.org/en-US/MPL/2.0/
  */
 
 function template_topics_list() : string
 {
-	global $context, $scripturl, $modSettings;
+	global $context, $scripturl;
 
-	$topics_list = '';
+	$topics_list = '<h2>' . $context['list_topics_title'] . '</h2>';
 
 	// Characters list
-	if (!empty($modSettings['TopicsList_topic_only_first']))
-	{
-		$topics_list .= '
+	$topics_list .= '
 		<div class="cat_bar">
 			<h3 class="catbg">';
 
@@ -31,7 +27,6 @@ function template_topics_list() : string
 		$topics_list .= '
 			</h3>
 		</div>';
-	}
 
 	foreach ($context['list_topics'] as $character => $initial_character)
 	{

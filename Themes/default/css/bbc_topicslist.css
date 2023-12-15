@@ -1,8 +1,8 @@
 /**
- * @package BBC Message Boxes
- * @version 3.0
+ * @package BBC Topics List
+ * @version 1.0
  * @author Diego Andrés <diegoandres_cortes@outlook.com>
- * @copyright Copyright (c) 2020, SMF Tricks
+ * @copyright Copyright (c) 2023, SMF Tricks
  * @license https://www.mozilla.org/en-US/MPL/2.0/
  */
 
@@ -10,14 +10,20 @@
 	padding-inline: 1.25em;
 	margin-inline: 2em;
 }
+.bbc_topicslist h2 {
+	font-size: 1.5em;
+	font-weight: 700;
+	display: block;
+	margin-bottom: 0.75em;
+}
 .bbc_topicslist h3.catbg {
-	display: grid;
-	grid-auto-flow: column;
-	grid-template-columns: repeat(auto-fit, minmax(2ch, 1fr));
-	justify-content: space-evenly;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1ch;
 	align-items: center;
 }
 .bbc_topicslist h3.catbg a {
+	flex: 0 0 3ch;
 	padding: 0;
 	text-align: center;
 }
@@ -26,4 +32,33 @@
 	border-radius: 0;
 	box-shadow: none;
 	padding-block: 0.5em !important;
+}
+.sceditor-insertTopicList {
+	max-width: 175px;
+}
+.sceditor-insertTopicList > div {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+}
+.sceditor-insertTopicList div.check_input {
+	display: grid;
+	grid-template-columns: 85% 1fr;
+	column-gap: 3px;
+}
+.sceditor-insertTopicList div.check_input input {
+	justify-self: flex-end;
+	width: auto;
+}
+.sceditor-insertTopicList input {
+	box-sizing: border-box;
+	margin-inline: 0;
+	padding-block: 1px;
+	width: 100%;
+}
+.sceditor-insertTopicList button {
+	align-self: flex-end;
+}
+.sceditor-insertTopicList span.smalltext {
+	font-weight: 400;
 }
