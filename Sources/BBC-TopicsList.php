@@ -339,7 +339,7 @@ class BBC_TopicsList
 			if (empty($context['list_topics']['0-9']))
 			{
 				unset($context['list_topics']['0-9']);
-				unset($context['list_topics_index']['0-9']);
+				unset($context['list_topics_index'][0]);
 			}
 
 			$context['list_topics_index'] = array_unique($context['list_topics_index']);
