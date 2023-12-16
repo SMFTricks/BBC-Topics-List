@@ -29,6 +29,8 @@
 		<hook hook="integrate_pre_load" function="BBC_TopicsList::initialize#" file="$sourcedir/BBC-TopicsList.php" reverse="true" />
 		<!-- Source Files -->
 		<remove-file name="$sourcedir/BBC-TopicsList.php">Source file</remove-file>
+		<!-- Temnplate Files -->
+		<remove-file name="$themedir/TopicsList.template.php">Template file</remove-file>
 		<!-- Language Files -->
 		<remove-dir name="$languagedir/topicslist">Language Files</remove-dir>
 		<!-- CSS Files -->
