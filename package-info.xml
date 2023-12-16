@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE package-info SYSTEM "http://www.simplemachines.org/xml/package-info">
 <package-info xmlns="http://www.simplemachines.org/xml/package-info" xmlns:smf="http://www.simplemachines.org/">
-	<id>smftricks:topicslistbbc</id>
+	<id>smftricks:bbctopicslist</id>
 	<name>BBC Topics List</name>
 	<version>1.0</version>
 	<type>modification</type>
@@ -34,7 +34,7 @@
 		<!-- CSS Files -->
 		<remove-dir name="$themedir/css/bbc_topicslist.css">CSS Files</remove-dir>
 		<!-- JS Files -->
-		<remove-dir name="$themedir/scirpts/bbc_topicslist.js">JavaScript Files</remove-dir>
+		<remove-dir name="$themedir/scripts/bbc_topicslist.js">JavaScript Files</remove-dir>
 		<!-- Image -->
 		<remove-file name="$imagesdir/bbc/topicslist.png" />
 	</uninstall>
