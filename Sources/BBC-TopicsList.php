@@ -27,6 +27,21 @@ class BBC_TopicsList
 	private array $_numeric_chars = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 	/**
+	 * @var string The included characters
+	 */
+	private string $_include_chars = '';
+
+	/**
+	 * @var int The selected board
+	 */
+	private int $_selected_board = 0;
+	
+	/**
+	 * @var string The actual data of the BBC
+	 */
+	private string $_data = '';
+
+	/**
 	 * Initialize the mod
 	 */
 	public function initialize() : void
@@ -208,8 +223,8 @@ class BBC_TopicsList
 			// Add the bbc
 			$codes[] = [
 				'tag' => $bbc,
-				'type' => 'unparsed_content',
-				'parameters' => [
+				'type' => ($bbc === 'topicslist' ? 'unparsed_content' : 'unparsed_equals_content'),
+				'parameters' => ($bbc === 'topicslist' ? [
 					'board' => [
 						'optional' => true,
 						'quote' => true,
@@ -225,13 +240,13 @@ class BBC_TopicsList
 						'quote' => true,
 						'match' => '(true|false)'
 					],
-				],
+				] : null),
 				'content' => '<div class="roundframe bbc_topicslist">$1</div>',
 				'disabled_content' => '<div class="noticebox">' . $txt['TopcisList_disabled'] . '</div>',
-				'validate' => isset($disabled['code']) ? null : function(&$tag, &$data, $disabled, $params)
+				'validate' => isset($disabled['code']) ? null : function(array &$tag, string|array|null &$data, array $disabled, array &$params)
 				{
 					// Handle the bbc somewhere else.
-					$this->getList($data, $params);
+					$this->getList($tag, $data, $params);
 				},
 				'block_level' => true,
 				'disallow_children' => true,
@@ -242,18 +257,28 @@ class BBC_TopicsList
 	/**
 	 * Get the topics list
 	 * 
+	 * @param array $tag The content and options of the tag
 	 * @param string $data The content of the BBC
 	 * @param array $params The bbc parameters
 	 */
-	private function getList(string &$data, array $params) : void
+	private function getList(array $tag, string|array|null &$data, array &$params) : void
 	{
 		global $smcFunc, $txt, $scripturl, $modSettings, $context, $board, $topic, $user_info;
 
 		// List title
-		$context['list_topics_title'] = $data;
+		if ($tag['tag'] === 'topicslist')
+		{
+			$context['list_topics_title'] = $data;
+		}
+
+		// Included characters
+		$this->_include_chars = ($tag['tag'] === 'tlist' ? ($data[0] ?: '') : ($params['{include}'] ?: ''));
+
+		// Selected board
+		$this->_selected_board = ($tag['tag'] === 'tlist' ? ($data[1] ?? 0) : ($params['{board}'] ?: 0));
 
 		// Default data
-		$data = $txt['TopicsList_no_data'];
+		$this->_data = $txt['TopicsList_no_data'];
 
 		// Only in topics?
 		if (!empty($modSettings['TopicsList_topic_only']) && empty($board) && empty($topic))
@@ -263,7 +288,7 @@ class BBC_TopicsList
 		$context['list_topics'] = [];
 		$context['list_topics_index'] = [];
 	
-		if (($context['list_topics'] = cache_get_data('bbc_topicslist_b' . (int) $params['{board}'] . '_u' . $user_info['id'] . (!empty($params['{alphanumeric}']) && $params['{alphanumeric}'] === 'true' ? '_alphanum' : '') . (!empty($params['{include}']) ? '_inc-' . $params['{include}'] : ''), $context['list_topics'], 3600)) === null || ($context['list_topics_index'] = cache_get_data('bbc_topicslistindex_b' . (int) $params['{board}'] . '_u' . $user_info['id'] . (!empty($params['{alphanumeric}']) && $params['{alphanumeric}'] === 'true' ? '_alphanum' : '') . (!empty($params['{include}']) ? '_inc-' . $params['{include}'] : ''), $context['list_topics_index'], 3600)) === null)
+		if (($context['list_topics'] = cache_get_data('bbc_topicslist_b' . $this->_selected_board . '_u' . $user_info['id'] . (!empty($params['{alphanumeric}']) && $params['{alphanumeric}'] === 'true' ? '_alphanum' : '') . (!empty($this->_include_chars) ? '_inc-' . $this->_include_chars : ''), $context['list_topics'], 3600)) === null || ($context['list_topics_index'] = cache_get_data('bbc_topicslistindex_b' . $this->_selected_board . '_u' . $user_info['id'] . (!empty($params['{alphanumeric}']) && $params['{alphanumeric}'] === 'true' ? '_alphanum' : '') . (!empty($this->_include_chars) ? '_inc-' . $this->_include_chars : ''), $context['list_topics_index'], 3600)) === null)
 		{
 			$result = $smcFunc['db_query']('', '
 				SELECT
@@ -271,12 +296,12 @@ class BBC_TopicsList
 				FROM {db_prefix}topics as t
 				JOIN {db_prefix}messages as m ON (m.id_msg = t.id_first_msg)
 				WHERE t.approved = {int:approved}
-					AND {query_see_topic_board}' . (empty($params['{board}']) ? '' : '
+					AND {query_see_topic_board}' . (empty($this->_selected_board) ? '' : '
 					AND t.id_board = {int:board}') . '
 				ORDER BY subject' . (empty($modSettings['TopicsList_topic_limit']) ? '' : '
 				LIMIT {int:limit}'),
 				[
-					'board' => (int) $params['{board}'],
+					'board' => $this->_selected_board,
 					'limit' => (int) $modSettings['TopicsList_topic_limit'],
 					'approved' => 1,
 				]
@@ -286,7 +311,7 @@ class BBC_TopicsList
 				'0-9' => [],
 			];
 			$context['list_topics_index'] = ['0-9'];
-			$context['list_included_chars'] = !empty($params['{include}']) ? explode(',', $params['{include}']) : [];
+			$context['list_included_chars'] = !empty($this->_include_chars) ? explode($tag['tag'] === 'tlist' ? '|' : ',', $this->_include_chars) : [];
 
 			// Make the characters uppercase
 			if (!empty($context['list_included_chars']))
@@ -314,6 +339,7 @@ class BBC_TopicsList
 				if (!empty($params['{alphanumeric}']) && $params['{alphanumeric}'] === 'true' && preg_match('/^[^\p{L}\p{N}]/u', $initial_character))
 					continue;
 
+				// Add the initial character to the index
 				$context['list_topics_index'][] = $initial_character;
 
 				// Add the topic
@@ -322,39 +348,54 @@ class BBC_TopicsList
 			$smcFunc['db_free_result']($result);
 
 			// Topics?
-			if (empty($context['list_topics']))
-				return;
-
-			// Group the numbers
-			foreach ($context['list_topics'] as $initial_character => $character_data)
+			if (!empty($context['list_topics']))
 			{
-				if (!in_array($initial_character, $this->_numeric_chars))
-					continue;
+				// Group the numbers
+				foreach ($context['list_topics'] as $initial_character => $character_data)
+				{
+					if (!in_array($initial_character, $this->_numeric_chars))
+						continue;
 
-				$context['list_topics']['0-9'] += $character_data;
-				unset($context['list_topics'][$initial_character]);
+					$context['list_topics']['0-9'] += $character_data;
+					unset($context['list_topics'][$initial_character]);
+				}
+
+				// Dump the numeric index
+				if (empty($context['list_topics']['0-9']))
+				{
+					unset($context['list_topics']['0-9']);
+					unset($context['list_topics_index'][0]);
+				}
+
+				$context['list_topics_index'] = array_unique($context['list_topics_index']);
 			}
-
-			// Dump the numeric index
-			if (empty($context['list_topics']['0-9']))
-			{
-				unset($context['list_topics']['0-9']);
-				unset($context['list_topics_index'][0]);
-			}
-
-			$context['list_topics_index'] = array_unique($context['list_topics_index']);
 
 			// Cache!
-			cache_put_data('bbc_topicslist_b' . (int) $params['{board}'] . '_u' . $user_info['id'] . (!empty($params['{alphanumeric}']) && $params['{alphanumeric}'] === 'true' ? '_alphanum' : '') . (!empty($params['{include}']) ? '_inc-' . $params['{include}'] : ''), $context['list_topics'], 3600);
-			cache_put_data('bbc_topicslistindex_b' . (int) $params['{board}'] . '_u' . $user_info['id'] . (!empty($params['{alphanumeric}']) && $params['{alphanumeric}'] === 'true' ? '_alphanum' : '') . (!empty($params['{include}']) ? '_inc-' . $params['{include}'] : ''), $context['list_topics_index'], 3600);
+			cache_put_data('bbc_topicslist_b' . $this->_selected_board . '_u' . $user_info['id'] . (!empty($params['{alphanumeric}']) && $params['{alphanumeric}'] === 'true' ? '_alphanum' : '') . (!empty($this->_include_chars) ? '_inc-' . $this->_include_chars : ''), $context['list_topics'], 3600);
+			cache_put_data('bbc_topicslistindex_b' . $this->_selected_board . '_u' . $user_info['id'] . (!empty($params['{alphanumeric}']) && $params['{alphanumeric}'] === 'true' ? '_alphanum' : '') . (!empty($this->_include_chars) ? '_inc-' . $this->_include_chars : ''), $context['list_topics_index'], 3600);
 		}
-		
-		$data = template_topics_list();
 
-		// There's a board?
-		if (!empty($params['{board}']))
+		// If there are any topics, load the list
+		if (!empty($context['list_topics']))
 		{
-			$data .= '<br><a class="button" href="' . $scripturl . '?board=' . $params['{board}'] . '.0">' . $txt['all'] . '</a>';
+			// Template
+			$this->_data = template_topics_list();
+
+			// There's a board?
+			if (!empty($this->_selected_board))
+			{
+				$this->_data .= '<br><a class="button" href="' . $scripturl . '?board=' . $this->_selected_board . '.0">' . $txt['all'] . '</a>';
+			}
+		}
+
+		// Send back the data
+		if ($tag['tag'] === 'tlist')
+		{
+			$data[0] = $this->_data;
+		}
+		else
+		{
+			$data = $this->_data;
 		}
 	}
 
