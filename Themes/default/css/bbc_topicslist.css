@@ -6,8 +6,8 @@
  * @license https://www.mozilla.org/en-US/MPL/2.0/
  */
 
-.bbc_topicslist.roundframe {
-	padding-inline: 1.25em;
+ .bbc_topicslist.roundframe {
+	padding-inline: 1.25em !important;
 	margin-inline: 2em;
 }
 .bbc_topicslist h2 {
