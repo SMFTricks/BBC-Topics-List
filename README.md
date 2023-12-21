@@ -14,8 +14,8 @@ Inserts an alphabetically ordered list of topics from the board using a BBC.
 - Exclude tags at the beginning
 - Show the list only in topics or everywhere
 - Customize each list
+  - From specific board
   - Include only certain characters
-  - Only alphanumeric
   - Only alphanumeric
 
 ### Localization
