@@ -307,10 +307,8 @@ class BBC_TopicsList
 				]
 			);
 
-			$context['list_topics'] = [
-				'0-9' => [],
-			];
-			$context['list_topics_index'] = ['0-9'];
+			$context['list_topics']['0-9'] = [];
+			$context['list_topics_index'] = ['0-9' => 0];
 			$context['list_included_chars'] = !empty($this->_include_chars) ? explode($tag['tag'] === 'tlist' ? '|' : ',', $this->_include_chars) : [];
 
 			// Make the characters uppercase
@@ -340,7 +338,7 @@ class BBC_TopicsList
 					continue;
 
 				// Add the initial character to the index
-				$context['list_topics_index'][] = $initial_character;
+				$context['list_topics_index'][$initial_character] = 0;
 
 				// Add the topic
 				$context['list_topics'][$initial_character][$row['id_topic']] = $row;
@@ -358,6 +356,7 @@ class BBC_TopicsList
 
 					$context['list_topics']['0-9'] += $character_data;
 					unset($context['list_topics'][$initial_character]);
+					unset($context['list_topics_index'][$initial_character]);
 				}
 
 				// Dump the numeric index
@@ -366,8 +365,6 @@ class BBC_TopicsList
 					unset($context['list_topics']['0-9']);
 					unset($context['list_topics_index'][0]);
 				}
-
-				$context['list_topics_index'] = array_unique($context['list_topics_index']);
 			}
 
 			// Cache!
