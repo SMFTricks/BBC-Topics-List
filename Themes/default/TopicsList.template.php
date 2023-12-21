@@ -12,7 +12,7 @@ function template_topics_list() : string
 {
 	global $context, $scripturl;
 
-	$topics_list = '<h2>' . $context['list_topics_title'] . '</h2>';
+	$topics_list = !empty($context['list_topics_title']) ? '<h2>' . $context['list_topics_title'] . '</h2>' : '';
 
 	// Characters list
 	$topics_list .= '
