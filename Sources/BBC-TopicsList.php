@@ -302,7 +302,7 @@ class BBC_TopicsList
 				LIMIT {int:limit}'),
 				[
 					'board' => $this->_selected_board,
-					'limit' => (int) $modSettings['TopicsList_topic_limit'],
+					'limit' => (int) ($modSettings['TopicsList_topic_limit'] ?? 0),
 					'approved' => 1,
 				]
 			);
