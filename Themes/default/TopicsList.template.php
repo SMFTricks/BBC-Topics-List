@@ -19,7 +19,7 @@ function template_topics_list() : string
 		<div class="cat_bar">
 			<h3 class="catbg">';
 
-		foreach ($context['list_topics_index'] as $index_character)
+		foreach ($context['list_topics_index'] as $index_character => $value)
 		{
 			$topics_list .= '<a href="#">' . $index_character . '</a>';
 		}
