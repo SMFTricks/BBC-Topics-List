@@ -8,6 +8,9 @@
  * @license https://www.mozilla.org/en-US/MPL/2.0/
  */
 
+use PostPrefix\Helper\Database;
+use PostPrefix\PostPrefix;
+
 if (!defined('SMF'))
 	die('No direct access...');
 
@@ -40,6 +43,11 @@ class BBC_TopicsList
 	 * @var string The actual data of the BBC
 	 */
 	private string $_data = '';
+
+	/**
+	 * @var bool Use prefixes
+	 */
+	public bool $_use_prefixes = false;
 
 	/**
 	 * Initialize the mod
@@ -263,7 +271,7 @@ class BBC_TopicsList
 	 */
 	private function getList(array $tag, string|array|null &$data, array &$params) : void
 	{
-		global $smcFunc, $txt, $scripturl, $modSettings, $context, $board, $topic, $user_info;
+		global $smcFunc, $txt, $scripturl, $modSettings, $context, $board, $topic, $user_info, $settings;
 
 		// List title
 		if ($tag['tag'] === 'topicslist')
@@ -284,17 +292,31 @@ class BBC_TopicsList
 		if (!empty($modSettings['TopicsList_topic_only']) && empty($board) && empty($topic))
 			return;
 
+		// $context['icon_sources'] says where each icon should come from - here we set up the ones which will always exist!
+		if (empty($context['icon_sources']))
+		{
+			$context['icon_sources'] = array();
+			foreach ($context['stable_icons'] as $icon)
+				$context['icon_sources'][$icon] = 'images_url';
+		}
+
 		// Topcis list for the template
 		$context['list_topics'] = [];
 		$context['list_topics_index'] = [];
+
+		// Prefixes
+		$this->_use_prefixes = method_exists('PostPrefix\PostPrefix', 'format') ?? false;
 	
 		if (($context['list_topics'] = cache_get_data('bbc_topicslist_b' . $this->_selected_board . '_u' . $user_info['id'] . (!empty($params['{alphanumeric}']) && $params['{alphanumeric}'] === 'true' ? '_alphanum' : '') . (!empty($this->_include_chars) ? '_inc-' . $this->_include_chars : ''), $context['list_topics'], 3600)) === null || ($context['list_topics_index'] = cache_get_data('bbc_topicslistindex_b' . $this->_selected_board . '_u' . $user_info['id'] . (!empty($params['{alphanumeric}']) && $params['{alphanumeric}'] === 'true' ? '_alphanum' : '') . (!empty($this->_include_chars) ? '_inc-' . $this->_include_chars : ''), $context['list_topics_index'], 3600)) === null)
 		{
 			$result = $smcFunc['db_query']('', '
 				SELECT
-					t.id_topic, t.id_board, t.approved, t.id_first_msg, TRIM(m.subject) as subject
+					t.id_topic, t.id_board, t.approved, t.id_first_msg,
+					TRIM(m.subject) as subject, m.icon' . (empty($this->_use_prefixes) ? '' : ', 
+					t.id_prefix, ' . implode(',',Database::$_prefix_columns)) . '
 				FROM {db_prefix}topics as t
-				JOIN {db_prefix}messages as m ON (m.id_msg = t.id_first_msg)
+				JOIN {db_prefix}messages as m ON (m.id_msg = t.id_first_msg)' . (empty($this->_use_prefixes) ? '' : '
+				LEFT JOIN {db_prefix}postprefixes AS pp ON (pp.id = t.id_prefix)') . '
 				WHERE t.approved = {int:approved}
 					AND {query_see_topic_board}' . (empty($this->_selected_board) ? '' : '
 					AND t.id_board = {int:board}') . '
@@ -322,6 +344,18 @@ class BBC_TopicsList
 
 			while ($row = $smcFunc['db_fetch_assoc']($result))
 			{
+				// Message Icon Management... check the images exist.
+				if (!empty($modSettings['messageIconChecks_enable']))
+				{
+					// If the current icon isn't known, then we need to do something...
+					if (!isset($context['icon_sources'][$row['icon']]))
+						$context['icon_sources'][$row['icon']] = file_exists($settings['theme_dir'] . '/images/post/' . $row['icon'] . '.png') ? 'images_url' : 'default_images_url';
+				}
+				elseif (!isset($context['icon_sources'][$row['icon']]))
+				{
+					$context['icon_sources'][$row['icon']] = 'images_url';
+				}
+
 				// Remove initial tags?
 				if (!empty($modSettings['TopicsList_topic_notags']))
 					$row['subject'] = preg_replace('/^\[[^\]]+\]\s*/', '', $row['subject']);
@@ -341,7 +375,16 @@ class BBC_TopicsList
 				$context['list_topics_index'][$initial_character] = 0;
 
 				// Add the topic
-				$context['list_topics'][$initial_character][$row['id_topic']] = $row;
+				$context['list_topics'][$initial_character][$row['id_topic']] = [
+					'id_topic' => $row['id_topic'],
+					'subject' => $row['subject'],
+					'icon_url' => $settings[$context['icon_sources'][$row['icon']]] . '/post/' . $row['icon'] . '.png',
+					'prefix' => !empty($this->_use_prefixes) && !empty($row['id_prefix']) ?
+						PostPrefix::format($row) : '',
+				];
+
+				// print_r($context['list_topics']);
+
 			}
 			$smcFunc['db_free_result']($result);
 

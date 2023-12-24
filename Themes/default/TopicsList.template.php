@@ -40,6 +40,10 @@ function template_topics_list() : string
 		{
 			$topics_list .= '
 			<li class="windowbg">
+				<span class="msg_icon">
+					<img src="' . $topic_info['icon_url'] . '">
+				</span>
+				' . ($topic_info['prefix'] ?: '') . '
 				<a href="' . $scripturl . '?topic=' . $topic_info['id_topic'] . '.0">' . $topic_info['subject'] . '</a>
 			</li>';
 		}
