@@ -1,5 +1,12 @@
 # Changelog
 
+#### 1.0.2 - 23 December 2023
+- ![Bug Fix](https://smftricks.com/assets/changelog/bug--minus.png) Fixed undefined issue for BBC arguments.
+
+#### 1.0.1 - 22 December 2023
+- ![Bug Fix](https://smftricks.com/assets/changelog/bug--minus.png) Fixed undefined issue when limit is not defined.
+- ![Translation](https://smftricks.com/assets/changelog/language.png) Russian translation provided by [Bugo](https://www.simplemachines.org/community/index.php?action=profile;u=229017)
+
 #### 1.0 - 22 December 2023
 - ![New Feature](https://smftricks.com/assets/changelog/tag--plus.png) Initial release.
 
