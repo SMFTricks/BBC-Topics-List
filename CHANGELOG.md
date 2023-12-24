@@ -1,5 +1,9 @@
 # Changelog
 
+#### 1.1 - 24 December 2023
+- ![New Feature](https://smftricks.com/assets/changelog/tag--plus.png) Added support for Post Prefixes.
+- ![New Feature](https://smftricks.com/assets/changelog/tag--plus.png) Added message icons.
+---
 #### 1.0.2 - 23 December 2023
 - ![Bug Fix](https://smftricks.com/assets/changelog/bug--minus.png) Fixed undefined issue for BBC arguments.
 
