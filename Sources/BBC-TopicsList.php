@@ -243,7 +243,7 @@ class BBC_TopicsList
 				] : null),
 				'content' => '<div class="roundframe bbc_topicslist">$1</div>',
 				'disabled_content' => '<div class="noticebox">' . $txt['TopcisList_disabled'] . '</div>',
-				'validate' => isset($disabled['code']) ? null : function(array &$tag, string|array|null &$data, array $disabled, array &$params)
+				'validate' => isset($disabled['code']) ? null : function(array &$tag, string|array|null &$data, array|null $disabled, array &$params)
 				{
 					// Handle the bbc somewhere else.
 					$this->getList($tag, $data, $params);
