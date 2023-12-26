@@ -20,6 +20,9 @@ $txt['TopicsList_topic_only_desc'] = 'This will prevent lists from appearing out
 $txt['TopicsList_topics_nosticky'] = 'Exclude sticky topics';
 $txt['TopicsList_topics_noself'] = 'Exclude self topics';
 $txt['TopicsList_topics_noself_desc'] = 'It will exclude the current topic if present in the results.';
+$txt['TopicsList_topics_prefixes'] = 'Include topic prefixes.';
+$txt['TopicsList_topics_prefixes_desc'] = 'It requires <a href="https://custom.simplemachines.org/index.php?mod=4038">SMF Post Prefix</a> MOD installed.';
+
 
 $txt['TopicsList_use'] = 'Who is allowed to use the topics list BBC';
 $txt['permissionname_TopicsList_use'] = 'Use the Topics List BBC';

@@ -143,6 +143,7 @@ class BBC_TopicsList
 			['check', 'TopicsList_topic_only', 'subtext' => $txt['TopicsList_topic_only_desc']],
 			['check', 'TopicsList_topics_nosticky'],
 			['check', 'TopicsList_topics_noself', 'subtext' => $txt['TopicsList_topics_noself_desc']],
+			['check', 'TopicsList_topics_prefixes', 'subtext' => $txt['TopicsList_topics_prefixes_desc']],
 			['permissions', 'TopicsList_use', 'subtext' => $txt['permissionhelp_TopicsList_use']]
 		];
 		
@@ -307,7 +308,7 @@ class BBC_TopicsList
 		$context['list_topics_index'] = [];
 
 		// Prefixes
-		$this->_use_prefixes = method_exists('PostPrefix\PostPrefix', 'format') ?? false;
+		$this->_use_prefixes = method_exists('PostPrefix\PostPrefix', 'format') && !empty($modSettings['TopicsList_topics_prefixes']) ?? false;
 	
 		if (($context['list_topics'] = cache_get_data('bbc_topicslist_b' . $this->_selected_board . '_u' . $user_info['id'] . (!empty($params['{alphanumeric}']) && $params['{alphanumeric}'] === 'true' ? '_alphanum' : '') . (!empty($this->_include_chars) ? '_inc-' . $this->_include_chars : ''), $context['list_topics'], 3600)) === null || ($context['list_topics_index'] = cache_get_data('bbc_topicslistindex_b' . $this->_selected_board . '_u' . $user_info['id'] . (!empty($params['{alphanumeric}']) && $params['{alphanumeric}'] === 'true' ? '_alphanum' : '') . (!empty($this->_include_chars) ? '_inc-' . $this->_include_chars : ''), $context['list_topics_index'], 3600)) === null)
 		{
