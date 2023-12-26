@@ -13,6 +13,9 @@ Inserts an alphabetically ordered list of topics from the board using a BBC.
 - Limit the amount of results
 - Exclude tags at the beginning
 - Show the list only in topics or everywhere
+- Exclude sticky topics
+- Exclude self topic
+- Integration with [SMF Post Prefix](https://github.com/SMFTricks/SMF-Post-Prefix)
 - Customize each list
   - From specific board
   - Include only certain characters
