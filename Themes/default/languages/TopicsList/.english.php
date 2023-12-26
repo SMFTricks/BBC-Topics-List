@@ -16,7 +16,10 @@ $txt['TopicsList_topic_limit_desc'] = 'The maximum amount of topics to display. 
 $txt['TopicsList_topic_notags'] = 'Exclude tags when displaying the topics';
 $txt['TopicsList_topic_notags_desc'] = 'For example: "[Tutorial] How to boil an egg", will appear as "How to boil an egg"';
 $txt['TopicsList_topic_only'] = 'Parse the BBC only inside topics';
-$txt['TopicsList_topic_only_desc'] = 'This will prevent lists from appearing in other pages or actions.';
+$txt['TopicsList_topic_only_desc'] = 'This will prevent lists from appearing outside of posts.';
+$txt['TopicsList_topics_nosticky'] = 'Exclude sticky topics';
+$txt['TopicsList_topics_noself'] = 'Exclude self topics';
+$txt['TopicsList_topics_noself_desc'] = 'It will exclude the current topic if present in the results.';
 
 $txt['TopicsList_use'] = 'Who is allowed to use the topics list BBC';
 $txt['permissionname_TopicsList_use'] = 'Use the Topics List BBC';

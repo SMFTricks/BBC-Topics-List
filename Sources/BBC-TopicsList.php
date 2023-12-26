@@ -141,6 +141,8 @@ class BBC_TopicsList
 			['int', 'TopicsList_topic_limit', 'subtext' => $txt['TopicsList_topic_limit_desc'], 'min' => 0],
 			['check', 'TopicsList_topic_notags', 'subtext' => $txt['TopicsList_topic_notags_desc']],
 			['check', 'TopicsList_topic_only', 'subtext' => $txt['TopicsList_topic_only_desc']],
+			['check', 'TopicsList_topics_nosticky'],
+			['check', 'TopicsList_topics_noself', 'subtext' => $txt['TopicsList_topics_noself_desc']],
 			['permissions', 'TopicsList_use', 'subtext' => $txt['permissionhelp_TopicsList_use']]
 		];
 		
@@ -319,13 +321,17 @@ class BBC_TopicsList
 				LEFT JOIN {db_prefix}postprefixes AS pp ON (pp.id = t.id_prefix)') . '
 				WHERE t.approved = {int:approved}
 					AND {query_see_topic_board}' . (empty($this->_selected_board) ? '' : '
-					AND t.id_board = {int:board}') . '
+					AND t.id_board = {int:board}') . (empty($modSettings['TopicsList_topics_nosticky']) ? '' : '
+					AND t.is_sticky = {int:notsticky}') . (empty($modSettings['TopicsList_topics_noself']) ? '' : '
+					AND t.id_topic <> {int:current}') . '
 				ORDER BY subject' . (empty($modSettings['TopicsList_topic_limit']) ? '' : '
 				LIMIT {int:limit}'),
 				[
 					'board' => $this->_selected_board,
 					'limit' => (int) ($modSettings['TopicsList_topic_limit'] ?? 0),
 					'approved' => 1,
+					'notsticky' => 0,
+					'current' => $topic ?? 0
 				]
 			);
 
@@ -406,7 +412,7 @@ class BBC_TopicsList
 				if (empty($context['list_topics']['0-9']))
 				{
 					unset($context['list_topics']['0-9']);
-					unset($context['list_topics_index'][0]);
+					unset($context['list_topics_index']['0-9']);
 				}
 			}
 
@@ -422,7 +428,7 @@ class BBC_TopicsList
 			$this->_data = template_topics_list();
 
 			// There's a board?
-			if (!empty($this->_selected_board))
+			if (!empty($this->_selected_board) && !empty($modSettings['TopicsList_topic_limit']))
 			{
 				$this->_data .= '<br><a class="button" href="' . $scripturl . '?board=' . $this->_selected_board . '.0">' . $txt['all'] . '</a>';
 			}

@@ -1,5 +1,10 @@
 # Changelog
 
+#### 1.2 - 26 December 2023
+- ![New Feature](https://smftricks.com/assets/changelog/tag--plus.png) Added setting to exclude sticky topics.
+- ![New Feature](https://smftricks.com/assets/changelog/tag--plus.png) Added setting to exclude the current topic.
+- ![Bug Fix](https://smftricks.com/assets/changelog/bug--minus.png) Fixed displaying '0-9' anchor when there are no numeric results.
+---
 #### 1.1 - 24 December 2023
 - ![New Feature](https://smftricks.com/assets/changelog/tag--plus.png) Added support for Post Prefixes.
 - ![New Feature](https://smftricks.com/assets/changelog/tag--plus.png) Added message icons.
