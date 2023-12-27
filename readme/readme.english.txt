@@ -19,7 +19,6 @@
 [li][size=0.9em]Exclude self topic[/size][/li]
 [li][size=0.9em]Show the list only in topics or everywhere[/size][/li]
 [li][size=0.9em]Integration with [url="https://custom.simplemachines.org/index.php?mod=4038"]SMF Post Prefix[/url][/size][/li]
-[li][size=0.9em]BBC Text Page[/size][/li]
 [li][size=0.9em]Customize each list[/size]
 [list]
 [li][size=0.8em]From specific board[/size][/li]
