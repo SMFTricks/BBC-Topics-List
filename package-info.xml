@@ -3,7 +3,7 @@
 <package-info xmlns="http://www.simplemachines.org/xml/package-info" xmlns:smf="http://www.simplemachines.org/">
 	<id>smftricks:bbctopicslist</id>
 	<name>BBC Topics List</name>
-	<version>1.2</version>
+	<version>1.2.1</version>
 	<type>modification</type>
 	<install for="2.1 - 2.1.99">
 		<!-- Throw error if PHP version too old -->
@@ -47,9 +47,9 @@
 		<!-- Language Files -->
 		<remove-dir name="$languagedir/TopicsList">Language Files</remove-dir>
 		<!-- CSS Files -->
-		<remove-dir name="$themedir/css/bbc_topicslist.css">CSS Files</remove-dir>
+		<remove-file name="$themedir/css/bbc_topicslist.css">CSS File</remove-file>
 		<!-- JS Files -->
-		<remove-dir name="$themedir/scripts/bbc_topicslist.js">JavaScript Files</remove-dir>
+		<remove-file name="$themedir/scripts/bbc_topicslist.js">JavaScript File</remove-file>
 		<!-- Image -->
 		<remove-file name="$imagesdir/bbc/topicslist.png" />
 	</uninstall>

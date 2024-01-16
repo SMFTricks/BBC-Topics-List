@@ -1,5 +1,8 @@
 # Changelog
 
+#### 1.2.1 - 15 January 2024
+- ![Bug Fix](https://smftricks.com/assets/changelog/bug--minus.png) Fixed typos on uninstall instructions.
+
 #### 1.2 - 26 December 2023
 - ![New Feature](https://smftricks.com/assets/changelog/tag--plus.png) Added setting to exclude sticky topics.
 - ![New Feature](https://smftricks.com/assets/changelog/tag--plus.png) Added setting to exclude the current topic.
