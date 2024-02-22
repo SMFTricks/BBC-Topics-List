@@ -17,6 +17,11 @@ $txt['TopicsList_topic_notags'] = 'Исключить теги при отобр
 $txt['TopicsList_topic_notags_desc'] = 'Например: вместо «[Обучение] Как сварить яйцо» отобразится «Как сварить яйцо»';
 $txt['TopicsList_topic_only'] = 'Парсить BBC Topics List только внутри тем.';
 $txt['TopicsList_topic_only_desc'] = 'Это предотвратит появление списков на других страницах или в действиях (экшенах).';
+$txt['TopicsList_topics_nosticky'] = 'Исключить закреплённые темы';
+$txt['TopicsList_topics_noself'] = 'Исключить собственные темы';
+$txt['TopicsList_topics_noself_desc'] = 'Будет исключена текущая тема, если она присутствует в результатах выборки.';
+$txt['TopicsList_topics_prefixes'] = 'Включить префиксы тем.';
+$txt['TopicsList_topics_prefixes_desc'] = 'Требует установки <a href="https://custom.simplemachines.org/index.php?mod=4038">SMF Post Prefix</a>.';
 
 $txt['TopicsList_use'] = 'Кому разрешено использовать BBC Topics List';
 $txt['permissionname_TopicsList_use'] = 'Использование Topics List BBC';
